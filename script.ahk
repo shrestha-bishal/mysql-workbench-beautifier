@@ -18,12 +18,16 @@ word := "" ; Variable to store the keyword
 ; Trigger action on Space 
 ~Space::
 {
+    ; Save original clipboard contents
     clipboardContents := ClipboardAll ; Get all the contents of the clipboard
     Clipboard := ""           ; Clear clipboard
+
     Send ^+{Left}             ; Select word to the left
     Send ^c                   ; Copy selected word
     word := Trim(Clipboard)
     Send {Right}              ; Cancel selection
+
+    ; Restore the clipboard contents
     Clipboard := clipboardContents
     clipboardContents := ""
     
