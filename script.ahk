@@ -63,6 +63,7 @@ word := "" ; Variable to store the keyword
     SendInput % capitalisedWord
     MsgBox % word
     word := "" 
+    return
 }
 
 ; Trigger action on Backspace
@@ -70,4 +71,5 @@ word := "" ; Variable to store the keyword
 {
     word := SubStr(word, 1, StrLen(word) - 1) ; Remove the last character from the word
     MsgBox % word
+    return
 }
