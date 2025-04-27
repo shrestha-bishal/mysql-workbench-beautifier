@@ -1,41 +1,36 @@
 #IfWinActive ahk_exe MySQLWorkbench.exe
 
 ; Define the list of SQL keywords and their capitalized versions
-keywords := ["select", "from", "where", "join", "inner", "left", "right", "on", "group", "by", "order", "having", "as", "and", "or", "insert", "into", "update", "set", "delete", "create", "table", "values", "use" ]
+keywords := []
+
+; creating array of the keywords
+Loop, Read, keywords.txt
+{
+    StringLower, keyword, A_LoopReadLine
+    keyword := Trim(keyword)
+
+    if (keyword != "")
+        keywords.Push(keyword)
+}
 
 word := "" ; Variable to store the keyword
-
-; Mapping each typed word
-~a::word := word . "a"
-~b::word := word . "b"
-~c::word := word . "c"
-~d::word := word . "d"
-~e::word := word . "e"
-~f::word := word . "f"
-~g::word := word . "g"
-~h::word := word . "h"
-~i::word := word . "i"
-~j::word := word . "j"
-~k::word := word . "k"
-~l::word := word . "l"
-~m::word := word . "m"
-~n::word := word . "n"
-~o::word := word . "o"
-~p::word := word . "p"
-~q::word := word . "q"
-~r::word := word . "r"
-~s::word := word . "s"
-~t::word := word . "t"
-~u::word := word . "u"
-~v::word := word . "v"
-~w::word := word . "w"
-~x::word := word . "x"
-~y::word := word . "y"
-~z::word := word . "z"
 
 ; Trigger action on Space 
 ~Space::
 {
+    ; Save original clipboard contents
+    clipboardContents := ClipboardAll ; Get all the contents of the clipboard
+    Clipboard := ""           ; Clear clipboard
+
+    Send ^+{Left}             ; Select word to the left
+    Send ^c                   ; Copy selected word
+    word := Trim(Clipboard)
+    Send {Right}              ; Cancel selection
+
+    ; Restore the clipboard contents
+    Clipboard := clipboardContents
+    clipboardContents := ""
+    
     if(word = "")
         return
     
@@ -43,6 +38,8 @@ word := "" ; Variable to store the keyword
     found := false
     for index, value in keywords
     {
+        StringLower, word, word
+        
         if (value = word)
         {
             found := true
@@ -53,7 +50,6 @@ word := "" ; Variable to store the keyword
     if (!found)
         return
 
-
     SendInput ^+{Left} ; Select the previous word (Ctrl+Shift+Left)
     SendInput {Backspace} ; Delete the selected word
 
@@ -61,6 +57,6 @@ word := "" ; Variable to store the keyword
     StringUpper, capitalisedWord, word
     capitalisedWord .= " "
     SendInput % capitalisedWord
-    MsgBox % word
     word := "" 
+    return
 }
