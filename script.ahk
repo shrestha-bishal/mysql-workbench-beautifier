@@ -68,5 +68,18 @@ word := "" ; Variable to store the keyword
 
 CanBeautifyKeyword() 
 {
+    if(IsLongSpaceBarPress()) return false
     return true
+}
+
+IsLongSpaceBarPress() ; check for long press
+{
+    KeyWait, Space, T0.5  ; Wait up to 0.5 seconds for release
+    if ErrorLevel  ; If not released within 0.5 sec
+    {
+        KeyWait, Space  ; Wait until released before continuing
+        return true
+    }
+
+    return false
 }
