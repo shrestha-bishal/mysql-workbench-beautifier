@@ -3,7 +3,7 @@
 ; Define the list of SQL keywords and their capitalized versions
 keywords := []
 
-; creating array of the keywords
+; creating array of the keywords for the keywords list
 Loop, Read, keywords.txt
 {
     StringLower, keyword, A_LoopReadLine
@@ -18,9 +18,14 @@ word := "" ; Variable to store the keyword
 ; Trigger action on Space 
 ~Space::
 {
+    canBeautify := CanBeautifyKeyword() 
+    
+    if(!canBeautify)
+        return
+
     ; Save original clipboard contents
     clipboardContents := ClipboardAll ; Get all the contents of the clipboard
-    Clipboard := ""           ; Clear clipboard
+    Clipboard := ""                   ; Clear clipboard
 
     Send ^+{Left}             ; Select word to the left
     Send ^c                   ; Copy selected word
@@ -30,10 +35,10 @@ word := "" ; Variable to store the keyword
     ; Restore the clipboard contents
     Clipboard := clipboardContents
     clipboardContents := ""
-    
+
     if(word = "")
         return
-    
+
     ; Early return if the key doesn't exist in the array
     found := false
     for index, value in keywords
@@ -59,4 +64,9 @@ word := "" ; Variable to store the keyword
     SendInput % capitalisedWord
     word := "" 
     return
+}
+
+CanBeautifyKeyword() 
+{
+    return true
 }
