@@ -68,7 +68,9 @@ word := "" ; Variable to store the keyword
 
 CanBeautifyKeyword() 
 {
-    if(IsLongSpaceBarPress()) return false
+    if(IsLongSpaceBarPress()) 
+        return false
+        
     return true
 }
 
