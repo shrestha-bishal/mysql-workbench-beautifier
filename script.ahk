@@ -18,6 +18,7 @@ word := "" ; Variable to store the keyword
 ; Trigger action on Space 
 ~Space::
 {
+    global word, keywords
     canBeautify := CanBeautifyKeyword() 
     
     if(!canBeautify)
@@ -29,6 +30,7 @@ word := "" ; Variable to store the keyword
 
     Send ^+{Left}             ; Select word to the left
     Send ^c                   ; Copy selected word
+    ClipWait, 0.5
     word := Trim(Clipboard)
     Send {Right}              ; Cancel selection
 
@@ -41,10 +43,10 @@ word := "" ; Variable to store the keyword
 
     ; Early return if the key doesn't exist in the array
     found := false
+    StringLower, word, word
+
     for index, value in keywords
     {
-        StringLower, word, word
-        
         if (value = word)
         {
             found := true
@@ -57,20 +59,17 @@ word := "" ; Variable to store the keyword
 
     SendInput ^+{Left} ; Select the previous word (Ctrl+Shift+Left)
     SendInput {Backspace} ; Delete the selected word
-
-    capitalisedWord := ""
     StringUpper, capitalisedWord, word
     capitalisedWord .= " "
     SendInput % capitalisedWord
     word := "" 
     return
 }
-
 CanBeautifyKeyword() 
 {
     if(IsLongSpaceBarPress()) 
         return false
-        
+
     return true
 }
 
