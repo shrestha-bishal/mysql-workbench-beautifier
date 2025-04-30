@@ -15,36 +15,50 @@ Loop, Read, keywords.txt
 
 word := "" ; Variable to store the keyword
 
+; Letter mappings
+~a::AppendChar("a")
+~b::AppendChar("b")
+~c::AppendChar("c")
+~d::AppendChar("d")
+~e::AppendChar("e")
+~f::AppendChar("f")
+~g::AppendChar("g")
+~h::AppendChar("h")
+~i::AppendChar("i")
+~j::AppendChar("j")
+~k::AppendChar("k")
+~l::AppendChar("l")
+~m::AppendChar("m")
+~n::AppendChar("n")
+~o::AppendChar("o")
+~p::AppendChar("p")
+~q::AppendChar("q")
+~r::AppendChar("r")
+~s::AppendChar("s")
+~t::AppendChar("t")
+~u::AppendChar("u")
+~v::AppendChar("v")
+~w::AppendChar("w")
+~x::AppendChar("x")
+~y::AppendChar("y")
+~z::AppendChar("z")
+
+~Backspace:: ; remove the last typed word
+    word := SubStr(word, 1, -1)
+    return
+
+~^Backspace:: ; empty the word
+    word := ""
+    return
+
 ; Trigger action on Space 
 ~Space::
 {
-    global word, keywords
-    canBeautify := CanBeautifyKeyword() 
-    
-    if(!canBeautify)
-        return
-
-    ; Save original clipboard contents
-    clipboardContents := ClipboardAll ; Get all the contents of the clipboard
-    Clipboard := ""                   ; Clear clipboard
-
-    Send ^+{Left}             ; Select word to the left
-    Send ^c                   ; Copy selected word
-    ClipWait, 0.5
-    word := Trim(Clipboard)
-    Send {Right}              ; Cancel selection
-
-    ; Restore the clipboard contents
-    Clipboard := clipboardContents
-    clipboardContents := ""
-
     if(word = "")
         return
-
+    
     ; Early return if the key doesn't exist in the array
     found := false
-    StringLower, word, word
-
     for index, value in keywords
     {
         if (value = word)
@@ -55,32 +69,25 @@ word := "" ; Variable to store the keyword
     }
 
     if (!found)
+    {
+        word := ""
         return
+    }
 
     SendInput ^+{Left} ; Select the previous word (Ctrl+Shift+Left)
     SendInput {Backspace} ; Delete the selected word
+
+    capitalisedWord := ""
     StringUpper, capitalisedWord, word
     capitalisedWord .= " "
     SendInput % capitalisedWord
     word := "" 
+}
+
+; Function to append character
+AppendChar(char) 
+{
+    global word
+    word .= char
     return
-}
-CanBeautifyKeyword() 
-{
-    if(IsLongSpaceBarPress()) 
-        return false
-
-    return true
-}
-
-IsLongSpaceBarPress() ; check for long press
-{
-    KeyWait, Space, T0.5  ; Wait up to 0.5 seconds for release
-    if ErrorLevel  ; If not released within 0.5 sec
-    {
-        KeyWait, Space  ; Wait until released before continuing
-        return true
-    }
-
-    return false
 }
