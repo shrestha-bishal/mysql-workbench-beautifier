@@ -118,3 +118,5 @@ month
 year
 day
 asc
+auto_increment
+current_timestamp

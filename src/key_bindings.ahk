@@ -26,6 +26,9 @@
 ~y::AppendKey("y")
 ~z::AppendKey("z")
 
+; Symbols and Punctuations
+~_::AppendKey("_")
+
 ~Backspace:: ; remove the last typed word
     word := SubStr(word, 1, -1)
     return
