@@ -19,6 +19,7 @@ AppendKey(char)
 {
     global word
     word .= char
+    Beautify()
     return
 }
 
@@ -41,19 +42,14 @@ Beautify()
     }
 
     if (!found)
-    {
-        word := ""
         return
-    }
 
     SendInput ^+{Left} ; Select the previous word (Ctrl+Shift+Left)
     SendInput {Backspace} ; Delete the selected word
 
     capitalisedWord := ""
     StringUpper, capitalisedWord, word
-    capitalisedWord .= " "
     SendInput % capitalisedWord
-    word := "" 
 } 
 
 #Include %A_ScriptDir%\key_bindings.ahk
