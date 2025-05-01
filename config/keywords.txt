@@ -120,3 +120,5 @@ day
 asc
 auto_increment
 current_timestamp
+true
+false
