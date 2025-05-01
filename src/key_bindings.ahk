@@ -28,14 +28,15 @@
 
 ; Symbols and Punctuations
 ~_::AppendKey("_")
+~`::AppendKey("``")
 
 ~Backspace:: ; remove the last typed word
     word := SubStr(word, 1, -1)
     return
 
-~^Backspace:: ; empty the word
+; empty the word
+~^Backspace::
+~Space:: 
+~Enter::
     word := ""
     return
-
-; Trigger action on Space 
-~Space::Beautify()
