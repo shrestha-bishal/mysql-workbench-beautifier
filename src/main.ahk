@@ -34,7 +34,6 @@ Beautify()
     if (isBeautified) {
         SendInput(word) 
         isBeautified := false
-        return
     }
 
     ; Early return if the key doesn't exist in the array
