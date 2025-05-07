@@ -35,6 +35,10 @@
     return
 
 ; empty the word
+~Up::
+~Down::
+~Left::
+~Right::
 ~^Backspace::
 ~Space:: 
 ~Enter::
