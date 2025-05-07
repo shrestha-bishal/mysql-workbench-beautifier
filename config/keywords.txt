@@ -122,3 +122,8 @@ auto_increment
 current_timestamp
 true
 false
+comment
+function
+procedure
+now
+call
