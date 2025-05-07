@@ -25,11 +25,11 @@ This script integrates seamless SQL keyword formatting directly into MySQL Workb
 - Press `Win + R`, type `shell:startup`, and press `Enter`.
 - Copy `mysql-workbench-beautifier.exe` or its shortcut into the startup folder.
 
-###### Compatibility
+#### Compatibility
 * Platform: Windows
 * MySQL Workbench Version: Tested with MySQL Workbench Community Edition
 
-###### License
+#### License
 MySQL Workbench Beautifier is licensed under the MIT License, allowing for modification and distribution while maintaining attribution.
 
 ![gif](https://github.com/user-attachments/assets/06fa6be4-8aad-4a8e-828d-3bb0ffa9d7ec)
