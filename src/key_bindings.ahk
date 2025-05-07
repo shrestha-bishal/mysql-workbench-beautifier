@@ -42,5 +42,8 @@
 ~^Backspace::
 ~Space:: 
 ~Enter::
+{
     word := ""
+    isBeautified := false
     return
+}
