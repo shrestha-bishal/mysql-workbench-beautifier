@@ -44,12 +44,18 @@ Beautify()
     if (!found)
         return
 
-    SendInput ^+{Left} ; Select the previous word (Ctrl+Shift+Left)
-    SendInput {Backspace} ; Delete the selected word
-
     capitalisedWord := ""
     StringUpper, capitalisedWord, word
-    SendInput % capitalisedWord
+    SendInput(capitalisedWord)
+    isBeautified = true
 } 
+
+SendInput(word) 
+{
+    SendInput ^+{Left} ; Select the previous word (Ctrl+Shift+Left)
+    SendInput {Backspace} ; Delete the selected word
+    SendInput % word
+    return
+}
 
 #Include %A_ScriptDir%\key_bindings.ahk
