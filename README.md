@@ -26,3 +26,5 @@ To automatically start the binding process on system startup, place the .exe fil
 
 #### License
 MIT License
+
+![gif](https://github.com/user-attachments/assets/06fa6be4-8aad-4a8e-828d-3bb0ffa9d7ec)
