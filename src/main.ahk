@@ -3,6 +3,7 @@
 keywordsFile := A_ScriptDir . "\..\config\keywords.txt" ; path to keywords file
 keywords := [] ; Define the list of SQL keywords and their capitalized versions
 word := ""     ; Variable to store the keyword
+isBeautified := false ; global variable that flags whether word is beautified
 
 ; creating array of the keywords for the keywords list
 Loop, Read, % keywordsFile
@@ -25,11 +26,17 @@ AppendKey(char)
 
 Beautify()
 {
-    global word, keywords
+    global word, keywords, isBeautified
  
     if(word = "")
         return
     
+    if (isBeautified) {
+        SendInput(word) 
+        isBeautified := false
+        return
+    }
+
     ; Early return if the key doesn't exist in the array
     found := false
     for index, value in keywords
@@ -47,7 +54,7 @@ Beautify()
     capitalisedWord := ""
     StringUpper, capitalisedWord, word
     SendInput(capitalisedWord)
-    isBeautified = true
+    isBeautified := true
 } 
 
 SendInput(word) 
