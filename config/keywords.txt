@@ -127,3 +127,8 @@ function
 procedure
 now
 call
+constraint_name
+table_name
+column_name
+key_column_usage
+constraint_schema
