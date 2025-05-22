@@ -22,6 +22,11 @@ This script integrates seamless SQL keyword formatting directly into MySQL Workb
 - Make sure the script is running. (The easiest way to look is into the system tray)
 - Start writing SQL queries in MySQL Workbench with enhanced keyword formatting.
 
+###### 3. Auto Bind (Optional):
+- To automatically launch the script on system startup:
+- Press `Win + R`, type `shell:startup`, and press `Enter`.
+- Copy the `MySQL Workbench Beautifier` shortcut file in the program start-up folder.
+
 ![image](https://github.com/user-attachments/assets/f61ee451-2c10-42c7-a082-f05bf91a4b43)
 
 #### Compatibility
