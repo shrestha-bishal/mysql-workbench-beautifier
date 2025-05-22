@@ -1,4 +1,3 @@
-keywordsFile := A_ScriptDir . "\config\keywords.txt" ; path to keywords file
 keywords := [] ; Define the list of SQL keywords and their capitalized versions
 word := ""     ; Variable to store the keyword
 isBeautified := false ; global variable that flags whether word is beautified
