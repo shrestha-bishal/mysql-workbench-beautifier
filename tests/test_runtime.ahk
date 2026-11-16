@@ -24,6 +24,9 @@ RunSqlCase("wildcard select"
 RunSqlCase("repeated wildcard selects"
     , "select * from`nselect * from`nselect * from`nselect * from"
     , "SELECT * FROM`nSELECT * FROM`nSELECT * FROM`nSELECT * FROM")
+RunSqlCase("reported keyword sequence"
+    , "create table table create table from create * from "
+    , "CREATE TABLE TABLE CREATE TABLE FROM CREATE * FROM ")
 RunSqlCase("quoted value resumes formatting on same line"
     , "select 'select from', ""as"" as title, ``from`` from users where name = 'it''s ok' and active = true;"
     , "SELECT 'select from', ""as"" AS title, ``from`` FROM users WHERE name = 'it''s ok' AND active = TRUE;")
