@@ -33,6 +33,38 @@ This script integrates seamless SQL keyword formatting directly into MySQL Workb
 * Platform: Windows
 * MySQL Workbench Version: Tested with MySQL Workbench Community Edition
 
+#### Safety and Testing
+- Live formatting waits for a token boundary and replaces only the number of characters tracked for that token. It does not use Ctrl+Shift+Left to select text.
+- The hotkeys are active only while MySQL Workbench is focused. Clicks, cursor movement, editing shortcuts, and switching windows invalidate the tracked token.
+- Press `Ctrl + Alt + F8` to pause or resume formatting.
+- Typing a single quote, double quote, or backtick pauses formatting through the quoted text. Formatting resumes after the quote and a line break. If a quoted value spans lines, formatting stays paused until it closes.
+- SQL line comments (`--` and `#`) and block comments (`/* ... */`) are excluded from formatting.
+- The dictionary includes MySQL keywords, common types, and commonly used built-in functions. MySQL versions and modes can differ, so review `config/keywords.txt` for your server version and naming conventions.
+- The punctuation hotkeys use standard US keyboard scan codes. Other keyboard layouts should be validated before relying on live formatting.
+
+Run the source safety tests with:
+
+```text
+py -m unittest discover -s tests
+```
+
+Before a release, manually verify these cases in MySQL Workbench:
+
+| Case | Expected result |
+|---|---|
+| Type `select` followed by Space, Enter, comma, period, or semicolon | Only `select` becomes `SELECT`; the boundary is preserved |
+| Type `select1`, `select_name`, or `myselect` | No partial keyword is changed |
+| Type a keyword with mixed case, then use Backspace to correct it | Only the completed keyword is capitalized |
+| Type a keyword inside single quotes, double quotes, or backticks | Quoted text is not capitalized |
+| Continue typing after a quote on the same line | Formatting remains paused until Enter |
+| Type keywords inside `--`, `#`, or `/* ... */` comments | Comment text is not capitalized, including across block-comment lines |
+| Type a MySQL user variable such as `@select` or `$select` | The variable name is not partially capitalized |
+| Move the caret, select text, click elsewhere, or paste before typing | Previously tracked characters are not replaced |
+| Switch to another application and type SQL-like text | No formatting occurs outside MySQL Workbench |
+| Hold Ctrl or Alt while typing a keyword letter | No replacement occurs |
+| Type a token longer than 64 characters | No partial token is replaced |
+| Press `Ctrl + Alt + F8`, type a keyword, and press it again | Formatting pauses, then resumes |
+
 #### License
 MySQL Workbench Beautifier is licensed under the MIT License, allowing for modification and distribution while maintaining attribution.
 

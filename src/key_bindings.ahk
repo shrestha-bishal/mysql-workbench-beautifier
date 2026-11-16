@@ -1,4 +1,8 @@
-; Letter mappings
+^!F8::ToggleBeautifier()
+
+#IfWinActive ahk_exe MySQLWorkbench.exe
+
+; Letters
 ~*a::AppendKey("a")
 ~*b::AppendKey("b")
 ~*c::AppendKey("c")
@@ -26,24 +30,120 @@
 ~*y::AppendKey("y")
 ~*z::AppendKey("z")
 
-; Symbols and Punctuations
-~_::AppendKey("_")
-~`::AppendKey("``")
+; Digits continue the current token, preventing matches inside identifiers.
+~SC00B::AppendKey("0")
+~SC002::AppendKey("1")
+~SC003::AppendKey("2")
+~SC004::AppendKey("3")
+~SC005::AppendKey("4")
+~SC006::AppendKey("5")
+~SC007::AppendKey("6")
+~SC008::AppendKey("7")
+~SC009::AppendKey("8")
+~SC00A::AppendKey("9")
+~*Numpad0::AppendKey("0")
+~*Numpad1::AppendKey("1")
+~*Numpad2::AppendKey("2")
+~*Numpad3::AppendKey("3")
+~*Numpad4::AppendKey("4")
+~*Numpad5::AppendKey("5")
+~*Numpad6::AppendKey("6")
+~*Numpad7::AppendKey("7")
+~*Numpad8::AppendKey("8")
+~*Numpad9::AppendKey("9")
 
-~Backspace:: ; remove the last typed word
-    word := SubStr(word, 1, -1)
-    return
+; Token boundaries
+Space::HandleDelimiter(" ")
+Enter::HandleDelimiter("`n")
+Tab::HandleDelimiter("`t")
+NumpadEnter::HandleDelimiter("`n")
+NumpadAdd::HandleDelimiter("+")
+NumpadSub::HandleCommentCharacter("-")
+NumpadDiv::HandleCommentCharacter("/")
+NumpadMult::HandleCommentCharacter("*")
+NumpadDot::HandleDelimiter(".")
+~*NumpadDel::InvalidateWord()
+~*NumpadIns::InvalidateWord()
+SC033::HandleDelimiter(",")
+SC034::HandleDelimiter(".")
+SC027::HandleDelimiter(";")
+SC01A::HandleDelimiter("[")
+SC01B::HandleDelimiter("]")
++SC01A::HandleDelimiter("{")
++SC01B::HandleDelimiter("}")
++SC027::HandleDelimiter(":")
++SC033::HandleDelimiter("<")
++SC034::HandleDelimiter(">")
++SC002::HandleDelimiter("!")
++SC003::HandleUnsafeDelimiter("@")
++SC004::HandleCommentCharacter("#")
++SC005::HandleUnsafeDelimiter("$")
++SC006::HandleDelimiter("%")
++SC007::HandleDelimiter("^")
++SC008::HandleDelimiter("&")
++SC009::HandleCommentCharacter("*")
++SC00A::HandleDelimiter("(")
++SC00B::HandleDelimiter(")")
+SC00C::HandleCommentCharacter("-")
+~+SC00C::AppendKey("_")
+SC00D::HandleDelimiter("=")
++SC00D::HandleDelimiter("+")
+SC035::HandleCommentCharacter("/")
++SC035::HandleDelimiter("?")
+SC02B::HandleDelimiter("\")
++SC02B::HandleDelimiter("|")
 
-; empty the word
-~Up::
-~Down::
-~Left::
-~Right::
-~^Backspace::
-~Space:: 
-~Enter::
-{
-    word := ""
-    isBeautified := false
-    return
-}
+; Quoted text is left untouched until its closing quote and the next line break.
+SC028::HandleQuotedDelimiter("'")
++SC028::HandleQuotedDelimiter(Chr(34))
+SC029::HandleQuotedDelimiter("``")
++SC029::HandleQuotedDelimiter("~")
+
+; Keep token tracking synchronized with edits and cursor movement.
+~*Backspace::HandleBackspace()
+~*Delete::InvalidateWord()
+~*Left::InvalidateWord()
+~*Right::InvalidateWord()
+~*Up::InvalidateWord()
+~*Down::InvalidateWord()
+~*Home::InvalidateWord()
+~*End::InvalidateWord()
+~*NumpadHome::InvalidateWord()
+~*NumpadEnd::InvalidateWord()
+~*NumpadLeft::InvalidateWord()
+~*NumpadRight::InvalidateWord()
+~*NumpadUp::InvalidateWord()
+~*NumpadDown::InvalidateWord()
+~*NumpadClear::InvalidateWord()
+~*PgUp::InvalidateWord()
+~*PgDn::InvalidateWord()
+~*Escape::InvalidateWord()
+~*Insert::InvalidateWord()
+~+Tab::InvalidateWord()
+~^Tab::InvalidateWord()
+~+Space::InvalidateWord()
+~!Space::InvalidateWord()
+~+Enter::InvalidateWord()
+~^Enter::InvalidateWord()
+~!Enter::InvalidateWord()
+~+NumpadEnter::InvalidateWord()
+~^NumpadEnter::InvalidateWord()
+~^Space::InvalidateWord()
+~!Tab::InvalidateWord()
+~#Tab::InvalidateWord()
+~*LButton::InvalidateWord()
+~*RButton::InvalidateWord()
+~*MButton::InvalidateWord()
+~*F1::InvalidateWord()
+~*F2::InvalidateWord()
+~*F3::InvalidateWord()
+~*F4::InvalidateWord()
+~*F5::InvalidateWord()
+~*F6::InvalidateWord()
+~*F7::InvalidateWord()
+~*F9::InvalidateWord()
+~*F10::InvalidateWord()
+~*F11::InvalidateWord()
+~*F12::InvalidateWord()
+
+#IfWinActive
