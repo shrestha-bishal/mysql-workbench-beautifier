@@ -217,12 +217,12 @@ ResetWord()
 
 ToggleBeautifier()
 {
-    global beautifierEnabled
+    global beautifierEnabled, appVersion
     beautifierEnabled := !beautifierEnabled
     ResetWord()
 
     if (beautifierEnabled)
-        Menu, Tray, Tip, MySQL Workbench Beautifier (enabled)
+        Menu, Tray, Tip, % "MySQL Workbench Beautifier v" . appVersion . " (enabled)"
     else
-        Menu, Tray, Tip, MySQL Workbench Beautifier (paused)
+        Menu, Tray, Tip, % "MySQL Workbench Beautifier v" . appVersion . " (paused)"
 }

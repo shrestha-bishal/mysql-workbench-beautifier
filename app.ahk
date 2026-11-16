@@ -1,4 +1,5 @@
-Menu, Tray, Tip, MySQL Workbench Beautifier (enabled)
+appVersion := "1.0.3"
+Menu, Tray, Tip, % "MySQL Workbench Beautifier v" . appVersion . " (enabled)"
 SetTimer, ResetWhenInactive, 20
 
 #IfWinActive ahk_exe MySQLWorkbench.exe

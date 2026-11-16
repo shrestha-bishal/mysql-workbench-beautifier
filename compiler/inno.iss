@@ -1,9 +1,12 @@
+#define MyAppVersion "1.0.3"
+
 [Setup]
 AppName=MySQL Workbench Beautifier
-AppVersion=1.0.2
+AppVersion={#MyAppVersion}
 DefaultDirName={pf}\MySQLWorkbenchBeautifier
 DefaultGroupName=MySQL Workbench Beautifier
 OutputDir=Output
+OutputBaseFilename=MySQLWorkbenchBeautifier-Setup-v{#MyAppVersion}
 SetupIconFile=..\assets\icon\icon.ico
 
 [Files]

@@ -54,6 +54,17 @@ class BeautifierSafetyTests(unittest.TestCase):
         self.assertIn("~+Space::InvalidateWord()", BINDINGS)
         self.assertIn("SetTimer, ResetWhenInactive, 20", (ROOT / "app.ahk").read_text())
 
+    def test_application_and_installer_use_the_same_version(self):
+        app = (ROOT / "app.ahk").read_text(encoding="utf-8")
+        installer = (ROOT / "compiler" / "inno.iss").read_text(encoding="utf-8")
+        app_version = re.search(r'appVersion := "([^"]+)"', app).group(1)
+        installer_version = re.search(r'#define MyAppVersion "([^"]+)"', installer).group(1)
+        self.assertEqual(app_version, installer_version)
+        self.assertIn("MySQLWorkbenchBeautifier-Setup-v{#MyAppVersion}", installer)
+        self.assertIn("OutputDir=Output", installer)
+        self.assertIn('"MySQL Workbench Beautifier v" . appVersion', app)
+        self.assertIn('"MySQL Workbench Beautifier v" . appVersion', BEAUTIFIER)
+
     def test_common_token_boundaries_and_identifier_characters_are_covered(self):
         for binding in (
             'Space::HandleDelimiter(" ")',
