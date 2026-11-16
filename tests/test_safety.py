@@ -65,6 +65,15 @@ class BeautifierSafetyTests(unittest.TestCase):
         self.assertIn('"MySQL Workbench Beautifier v" . appVersion', app)
         self.assertIn('"MySQL Workbench Beautifier v" . appVersion', BEAUTIFIER)
 
+    def test_keywords_load_from_source_and_build_locations(self):
+        app = (ROOT / "app.ahk").read_text(encoding="utf-8")
+        self.assertIn('keywordsFile := A_ScriptDir . "\\config\\keywords.txt"', app)
+        self.assertIn('keywordsFile := A_ScriptDir . "\\..\\config\\keywords.txt"', app)
+        self.assertIn("if (!FileExist(keywordsFile))", app)
+        self.assertIn("Could not find the required keywords file", app)
+        self.assertFalse((ROOT / "build" / "config" / "keywords.txt").exists())
+        self.assertTrue((ROOT / "config" / "keywords.txt").exists())
+
     def test_common_token_boundaries_and_identifier_characters_are_covered(self):
         for binding in (
             'Space::HandleDelimiter(" ")',

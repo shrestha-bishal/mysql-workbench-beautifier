@@ -40,6 +40,7 @@ This script integrates seamless SQL keyword formatting directly into MySQL Workb
 - Typing a single quote, double quote, or backtick pauses formatting through the quoted text. Formatting resumes after the quote and a line break. If a quoted value spans lines, formatting stays paused until it closes.
 - SQL line comments (`--` and `#`) and block comments (`/* ... */`) are excluded from formatting.
 - The dictionary includes MySQL keywords, common types, and commonly used built-in functions. MySQL versions and modes can differ, so review `config/keywords.txt` for your server version and naming conventions.
+- The installed app reads `config\keywords.txt` beside its executable. When running `build\MySQLWorkbenchBeautifier.exe` directly from the repository, it falls back to the repository's `config` folder.
 - The punctuation hotkeys use standard US keyboard scan codes. Other keyboard layouts should be validated before relying on live formatting.
 
 Run the source safety tests with:
