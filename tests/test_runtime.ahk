@@ -18,6 +18,12 @@ RunControlBackspaceCase()
 RunSqlCase("select query with joins and aggregates"
     , "select u.id, u.name, count(o.id) as order_count from users u left join orders o on o.user_id = u.id where u.active = 1 group by u.id, u.name having count(o.id) > 0 order by order_count desc limit 10;"
     , "SELECT u.id, u.name, COUNT(o.id) AS order_count FROM users u LEFT JOIN orders o ON o.user_id = u.id WHERE u.active = 1 GROUP BY u.id, u.name HAVING COUNT(o.id) > 0 ORDER BY order_count DESC LIMIT 10;")
+RunSqlCase("wildcard select"
+    , "select * from users;"
+    , "SELECT * FROM users;")
+RunSqlCase("repeated wildcard selects"
+    , "select * from`nselect * from`nselect * from`nselect * from"
+    , "SELECT * FROM`nSELECT * FROM`nSELECT * FROM`nSELECT * FROM")
 RunSqlCase("quoted value resumes formatting on same line"
     , "select 'select from', ""as"" as title, ``from`` from users where name = 'it''s ok' and active = true;"
     , "SELECT 'select from', ""as"" AS title, ``from`` FROM users WHERE name = 'it''s ok' AND active = TRUE;")

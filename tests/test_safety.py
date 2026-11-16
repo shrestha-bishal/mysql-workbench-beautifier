@@ -36,6 +36,15 @@ class BeautifierSafetyTests(unittest.TestCase):
         self.assertIn("StrLen(word) > 64", BEAUTIFIER)
         self.assertIn("InvalidateWord()", BEAUTIFIER)
 
+    def test_hotkey_state_and_replacement_are_atomic(self):
+        self.assertIn(
+            "; Keep replacement and delimiter emission atomic against other hotkey threads.\n"
+            "    Critical\n    global word, wordIsValid, keywords",
+            BEAUTIFIER,
+        )
+        self.assertRegex(BEAUTIFIER, r"AppendKey\(char\)\s*\{\s*Critical")
+        self.assertRegex(BEAUTIFIER, r"HandleCommentCharacter\(char\)\s*\{\s*Critical")
+
     def test_ctrl_backspace_resets_tracking_for_the_next_token(self):
         self.assertIn("HandleBackspace(controlBackspace := false)", BEAUTIFIER)
         self.assertIn("if (controlBackspace || GetKeyState(\"Ctrl\", \"P\"))", BEAUTIFIER)

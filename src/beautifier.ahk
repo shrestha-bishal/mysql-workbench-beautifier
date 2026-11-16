@@ -22,6 +22,7 @@ Loop, Read, % keywordsFile
 
 AppendKey(char)
 {
+    Critical
     global word, wordIsValid, beautifierEnabled, unsafeUntilNewline, inBlockComment, previousDelimiter, quoteDelimiter, quoteBackslashCount, variableName
 
     if (!beautifierEnabled)
@@ -52,6 +53,8 @@ AppendKey(char)
 
 HandleDelimiter(delimiter)
 {
+    ; Keep replacement and delimiter emission atomic against other hotkey threads.
+    Critical
     global word, wordIsValid, keywords, beautifierEnabled, unsafeUntilNewline, inBlockComment, previousDelimiter, quoteDelimiter, quoteBackslashCount, variableName
 
     if (variableName) {
@@ -110,6 +113,7 @@ HandleDelimiter(delimiter)
 
 HandleQuotedDelimiter(delimiter)
 {
+    Critical
     global quoteDelimiter, quoteBackslashCount, unsafeUntilNewline, inBlockComment
 
     if (quoteDelimiter = "") {
@@ -140,6 +144,7 @@ HandleQuotedDelimiter(delimiter)
 
 HandleCommentCharacter(char)
 {
+    Critical
     global previousDelimiter, unsafeUntilNewline, inBlockComment
 
     if (unsafeUntilNewline && !inBlockComment) {
@@ -223,6 +228,7 @@ EmitKey(key)
 
 HandleUnsafeDelimiter(delimiter)
 {
+    Critical
     global unsafeUntilNewline
 
     HandleDelimiter(delimiter)
@@ -232,6 +238,7 @@ HandleUnsafeDelimiter(delimiter)
 
 HandleVariablePrefix(delimiter)
 {
+    Critical
     global unsafeUntilNewline, inBlockComment, quoteDelimiter, variableName
 
     if (unsafeUntilNewline || inBlockComment || quoteDelimiter != "") {
@@ -246,6 +253,7 @@ HandleVariablePrefix(delimiter)
 
 HandleBackspace(controlBackspace := false)
 {
+    Critical
     global word, wordIsValid
 
     if (controlBackspace || GetKeyState("Ctrl", "P")) {
@@ -271,6 +279,7 @@ HandleBackspace(controlBackspace := false)
 
 InvalidateWord()
 {
+    Critical
     global word, wordIsValid, previousDelimiter
     word := ""
     wordIsValid := false
@@ -279,6 +288,7 @@ InvalidateWord()
 
 ResetWord()
 {
+    Critical
     global word, wordIsValid, previousDelimiter
     word := ""
     wordIsValid := true
@@ -287,6 +297,7 @@ ResetWord()
 
 ToggleBeautifier()
 {
+    Critical
     global beautifierEnabled, appVersion
     beautifierEnabled := !beautifierEnabled
     ResetWord()
