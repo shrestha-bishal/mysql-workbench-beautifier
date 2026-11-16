@@ -49,6 +49,14 @@ Run the source safety tests with:
 py -m unittest discover -s tests
 ```
 
+Run the headless AutoHotkey behavior tests with an AutoHotkey v1.1 runtime:
+
+```text
+AutoHotkeyU64.exe tests\test_runtime.ahk
+```
+
+The runtime suite simulates multi-statement SQL in memory without opening or focusing a test window. It also checks every keyword in `config\keywords.txt`.
+
 Before a release, manually verify these cases in MySQL Workbench:
 
 | Case | Expected result |
@@ -56,6 +64,7 @@ Before a release, manually verify these cases in MySQL Workbench:
 | Type `select` followed by Space, Enter, comma, period, or semicolon | Only `select` becomes `SELECT`; the boundary is preserved |
 | Type `select1`, `select_name`, or `myselect` | No partial keyword is changed |
 | Type a keyword with mixed case, then use Backspace to correct it | Only the completed keyword is capitalized |
+| Press Ctrl+Backspace, then type `select` and Space | The next keyword is capitalized |
 | Type a keyword inside single quotes, double quotes, or backticks | Quoted text is not capitalized |
 | Continue typing after a quote on the same line | Formatting remains paused until Enter |
 | Type keywords inside `--`, `#`, or `/* ... */` comments | Comment text is not capitalized, including across block-comment lines |
@@ -65,6 +74,14 @@ Before a release, manually verify these cases in MySQL Workbench:
 | Hold Ctrl or Alt while typing a keyword letter | No replacement occurs |
 | Type a token longer than 64 characters | No partial token is replaced |
 | Press `Ctrl + Alt + F8`, type a keyword, and press it again | Formatting pauses, then resumes |
+
+#### Building and Publishing a Release
+
+1. Run the tests: `py -m unittest discover -s tests`, then `AutoHotkeyU64.exe tests\test_runtime.ahk`.
+2. Update the version in `app.ahk` and `compiler\inno.iss`.
+3. In Ahk2Exe, confirm the source and destination paths, then click **Convert** to create the EXE in `build`.
+4. Compile `compiler\inno.iss` in Inno Setup. This creates the installer in `compiler\Output`.
+5. Test the installer, then attach it to the GitHub Release for the matching version tag.
 
 #### License
 MySQL Workbench Beautifier is licensed under the MIT License, allowing for modification and distribution while maintaining attribution.

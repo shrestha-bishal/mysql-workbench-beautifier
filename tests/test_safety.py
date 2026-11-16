@@ -25,7 +25,8 @@ class BeautifierSafetyTests(unittest.TestCase):
     def test_replacement_never_uses_word_selection_shortcuts(self):
         self.assertNotIn("^+{Left}", BEAUTIFIER)
         self.assertIn("Loop, % StrLen(word)", BEAUTIFIER)
-        self.assertIn("SendInput, {Backspace}", BEAUTIFIER)
+        self.assertIn('EmitKey("Backspace")', BEAUTIFIER)
+        self.assertIn("SendInput, {Text}%text%", BEAUTIFIER)
         self.assertIn("keywords.HasKey(word)", BEAUTIFIER)
 
     def test_tracking_fails_closed_for_modifiers_and_long_tokens(self):
@@ -35,15 +36,23 @@ class BeautifierSafetyTests(unittest.TestCase):
         self.assertIn("StrLen(word) > 64", BEAUTIFIER)
         self.assertIn("InvalidateWord()", BEAUTIFIER)
 
+    def test_ctrl_backspace_resets_tracking_for_the_next_token(self):
+        self.assertIn("HandleBackspace(controlBackspace := false)", BEAUTIFIER)
+        self.assertIn("if (controlBackspace || GetKeyState(\"Ctrl\", \"P\"))", BEAUTIFIER)
+        self.assertIn("ResetWord()", BEAUTIFIER)
+        self.assertIn("~*Backspace::HandleBackspace()", BINDINGS)
+
     def test_quoted_text_is_not_formatted_before_newline(self):
         self.assertIn("unsafeUntilNewline := true", BEAUTIFIER)
         self.assertIn('if (delimiter = "`n")', BEAUTIFIER)
+        self.assertIn("delimiter = quoteDelimiter && !escaped", BEAUTIFIER)
         self.assertIn("unsafeUntilNewline := false", BEAUTIFIER)
+        self.assertIn("StringLower, char, char", BEAUTIFIER)
         self.assertIn('HandleQuotedDelimiter("\'")', BINDINGS)
         self.assertIn("HandleQuotedDelimiter(Chr(34))", BINDINGS)
         self.assertIn('HandleQuotedDelimiter("``")', BINDINGS)
-        self.assertIn('HandleUnsafeDelimiter("@")', BINDINGS)
-        self.assertIn('HandleUnsafeDelimiter("$")', BINDINGS)
+        self.assertIn('HandleVariablePrefix("@")', BINDINGS)
+        self.assertIn('HandleVariablePrefix("$")', BINDINGS)
 
     def test_bindings_are_workbench_scoped_and_pauseable(self):
         self.assertIn("#IfWinActive ahk_exe MySQLWorkbench.exe", BINDINGS)

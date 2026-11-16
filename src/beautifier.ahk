@@ -6,7 +6,10 @@ inBlockComment := false
 previousDelimiter := ""
 quoteDelimiter := ""
 quoteBackslashCount := 0
+variableName := false
 beautifierEnabled := true
+runtimeTestMode := false
+runtimeTestBuffer := ""
 
 Loop, Read, % keywordsFile
 {
@@ -19,7 +22,7 @@ Loop, Read, % keywordsFile
 
 AppendKey(char)
 {
-    global word, wordIsValid, beautifierEnabled, unsafeUntilNewline, inBlockComment, previousDelimiter, quoteDelimiter, quoteBackslashCount
+    global word, wordIsValid, beautifierEnabled, unsafeUntilNewline, inBlockComment, previousDelimiter, quoteDelimiter, quoteBackslashCount, variableName
 
     if (!beautifierEnabled)
         return
@@ -34,9 +37,13 @@ AppendKey(char)
     if (quoteDelimiter != "")
         quoteBackslashCount := 0
 
+    if (variableName)
+        return
+
     if (!wordIsValid || unsafeUntilNewline || inBlockComment)
         return
 
+    StringLower, char, char
     word .= char
 
     if (StrLen(word) > 64)
@@ -45,7 +52,14 @@ AppendKey(char)
 
 HandleDelimiter(delimiter)
 {
-    global word, wordIsValid, keywords, beautifierEnabled, unsafeUntilNewline, inBlockComment, previousDelimiter, quoteDelimiter, quoteBackslashCount
+    global word, wordIsValid, keywords, beautifierEnabled, unsafeUntilNewline, inBlockComment, previousDelimiter, quoteDelimiter, quoteBackslashCount, variableName
+
+    if (variableName) {
+        SendDelimiter(delimiter)
+        variableName := false
+        ResetWord()
+        return
+    }
 
     if (inBlockComment) {
         SendDelimiter(delimiter)
@@ -84,10 +98,10 @@ HandleDelimiter(delimiter)
 
     if (beautifierEnabled && wordIsValid && word != "" && keywords.HasKey(word)) {
         Loop, % StrLen(word)
-            SendInput, {Backspace}
+            EmitKey("Backspace")
 
         StringUpper, capitalisedWord, word
-        SendInput, {Text}%capitalisedWord%
+        EmitText(capitalisedWord)
     }
 
     SendDelimiter(delimiter)
@@ -115,8 +129,11 @@ HandleQuotedDelimiter(delimiter)
     escaped := Mod(quoteBackslashCount, 2)
     HandleDelimiter(delimiter)
 
-    if (delimiter = quoteDelimiter && !escaped)
+    if (delimiter = quoteDelimiter && !escaped) {
         quoteDelimiter := ""
+        unsafeUntilNewline := false
+        ResetWord()
+    }
 
     quoteBackslashCount := 0
 }
@@ -166,13 +183,42 @@ HandleCommentCharacter(char)
 SendDelimiter(delimiter)
 {
     if (delimiter = "`n")
-        SendInput, {Enter}
+        EmitKey("Enter")
     else if (delimiter = "`t")
-        SendInput, {Tab}
+        EmitKey("Tab")
     else if (delimiter = " ")
-        SendInput, {Space}
+        EmitKey("Space")
     else
-        SendInput, {Text}%delimiter%
+        EmitText(delimiter)
+}
+
+EmitText(text)
+{
+    global runtimeTestMode, runtimeTestBuffer
+
+    if (runtimeTestMode)
+        runtimeTestBuffer .= text
+    else
+        SendInput, {Text}%text%
+}
+
+EmitKey(key)
+{
+    global runtimeTestMode, runtimeTestBuffer
+
+    if (!runtimeTestMode) {
+        SendInput, {%key%}
+        return
+    }
+
+    if (key = "Backspace")
+        runtimeTestBuffer := SubStr(runtimeTestBuffer, 1, -1)
+    else if (key = "Enter")
+        runtimeTestBuffer .= "`n"
+    else if (key = "Tab")
+        runtimeTestBuffer .= "`t"
+    else if (key = "Space")
+        runtimeTestBuffer .= " "
 }
 
 HandleUnsafeDelimiter(delimiter)
@@ -184,11 +230,35 @@ HandleUnsafeDelimiter(delimiter)
     InvalidateWord()
 }
 
-HandleBackspace()
+HandleVariablePrefix(delimiter)
+{
+    global unsafeUntilNewline, inBlockComment, quoteDelimiter, variableName
+
+    if (unsafeUntilNewline || inBlockComment || quoteDelimiter != "") {
+        HandleDelimiter(delimiter)
+        return
+    }
+
+    HandleDelimiter(delimiter)
+    variableName := true
+    InvalidateWord()
+}
+
+HandleBackspace(controlBackspace := false)
 {
     global word, wordIsValid
 
-    if (GetKeyState("Ctrl", "P") || GetKeyState("Alt", "P") || GetKeyState("Shift", "P")) {
+    if (controlBackspace || GetKeyState("Ctrl", "P")) {
+        if (!GetKeyState("Alt", "P") && !GetKeyState("Shift", "P")) {
+            ResetWord()
+            return
+        }
+
+        InvalidateWord()
+        return
+    }
+
+    if (GetKeyState("Alt", "P") || GetKeyState("Shift", "P")) {
         InvalidateWord()
         return
     }

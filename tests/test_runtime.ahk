@@ -1,12 +1,8 @@
+#SingleInstance Force
+
 keywordsFile := A_ScriptDir . "\..\config\keywords.txt"
 #Include %A_ScriptDir%\..\src\beautifier.ahk
-
-Gui, +HwndtestWindow
-Gui, Add, Edit, w500 h120 vTestEdit hwndtestEdit
-Gui, Show,, Beautifier runtime tests
-WinActivate, ahk_id %testWindow%
-GuiControl, Focus, TestEdit
-Sleep, 100
+runtimeTestMode := true
 
 resultsFile := A_Temp . "\mysql-workbench-beautifier-runtime-tests.txt"
 FileDelete, %resultsFile%
@@ -18,92 +14,133 @@ RunCase("digits prevent partial match", "select1", " ", "select1 ")
 RunCase("identifier suffix prevents partial match", "myselect", " ", "myselect ")
 RunCase("underscore remains part of identifier", "select_name", " ", "select_name ")
 RunBackspaceCase()
-RunQuotedCase()
-RunLineCommentCase()
-RunBlockCommentCase()
-
-RunBackspaceCase()
-{
-    ResetTestState()
-    ClearEdit()
-    TypeTracked("selecX")
-    SendInput, {Backspace}
-    HandleBackspace()
-    TypeTracked("t")
-    HandleDelimiter(" ")
-
-    GuiControlGet, actual,, TestEdit
-    RecordResult("backspace correction", actual, "SELECT ")
-}
+RunControlBackspaceCase()
+RunSqlCase("select query with joins and aggregates"
+    , "select u.id, u.name, count(o.id) as order_count from users u left join orders o on o.user_id = u.id where u.active = 1 group by u.id, u.name having count(o.id) > 0 order by order_count desc limit 10;"
+    , "SELECT u.id, u.name, COUNT(o.id) AS order_count FROM users u LEFT JOIN orders o ON o.user_id = u.id WHERE u.active = 1 GROUP BY u.id, u.name HAVING COUNT(o.id) > 0 ORDER BY order_count DESC LIMIT 10;")
+RunSqlCase("quoted value resumes formatting on same line"
+    , "select 'select from', ""as"" as title, ``from`` from users where name = 'it''s ok' and active = true;"
+    , "SELECT 'select from', ""as"" AS title, ``from`` FROM users WHERE name = 'it''s ok' AND active = TRUE;")
+RunSqlCase("comments, strings, and multiple statements"
+    , "-- select this comment stays lowercase`nselect id from users; # update this comment too`nupdate users set active = false where id = 1;"
+    , "-- select this comment stays lowercase`nSELECT id FROM users; # update this comment too`nUPDATE users SET active = FALSE WHERE id = 1;")
+RunSqlCase("create table with types and constraints"
+    , "create table audit_log (id bigint unsigned not null auto_increment primary key, created_at datetime default current_timestamp, message varchar(255), constraint audit_log_check check (id > 0));"
+    , "CREATE TABLE audit_log (id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, created_at DATETIME DEFAULT CURRENT_TIMESTAMP, message VARCHAR(255), CONSTRAINT audit_log_check CHECK (id > 0));")
+RunSqlCase("transaction and case expression"
+    , "start transaction; update accounts set balance = case when id = 1 then balance - 10 else balance end; commit;"
+    , "START TRANSACTION; UPDATE accounts SET balance = CASE WHEN id = 1 THEN balance - 10 ELSE balance END; COMMIT;")
+RunSqlCase("mixed case keywords"
+    , "SeLeCt id FrOm users WhErE active = true;"
+    , "SELECT id FROM users WHERE active = TRUE;")
+RunSqlCase("user variables do not block later keywords"
+    , "select @select as current_value from users where id = $select;"
+    , "SELECT @select AS current_value FROM users WHERE id = $select;")
+RunSqlCase("CTE and window function"
+    , "with ranked_orders as (select user_id, row_number() over (partition by user_id order by created_at desc) as rn from orders) select user_id from ranked_orders where rn = 1;"
+    , "WITH ranked_orders AS (SELECT user_id, ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY created_at DESC) AS rn FROM orders) SELECT user_id FROM ranked_orders WHERE rn = 1;")
+RunSqlCase("multiline quote and block comment"
+    , "select 'select`nfrom users' as note, id /* where this comment`nupdate stays lowercase */ from users where active = true;"
+    , "SELECT 'select`nfrom users' AS note, id /* where this comment`nupdate stays lowercase */ FROM users WHERE active = TRUE;")
+RunKeywordDictionaryCase()
 
 FileAppend, % "Failures: " . failures . "`n", %resultsFile%
-Gui, Destroy
 ExitApp, %failures%
 
 RunCase(name, text, delimiter, expected)
 {
-    global failures, resultsFile
+    global runtimeTestBuffer
     ResetTestState()
-    ClearEdit()
+    runtimeTestBuffer := ""
     TypeTracked(text)
-    Sleep, 30
-
     if (delimiter != "")
         HandleDelimiter(delimiter)
-
-    Sleep, 30
-    GuiControlGet, actual,, TestEdit
-    RecordResult(name, actual, expected)
+    RecordResult(name, runtimeTestBuffer, expected)
 }
 
-RunQuotedCase()
+RunBackspaceCase()
 {
-    global failures, resultsFile
+    global runtimeTestBuffer
     ResetTestState()
-    ClearEdit()
-    HandleQuotedDelimiter("'")
-    TypeTracked("select")
-    HandleQuotedDelimiter("'")
+    runtimeTestBuffer := ""
+    TypeTracked("selecX")
+    EmitKey("Backspace")
+    HandleBackspace()
+    TypeTracked("t")
     HandleDelimiter(" ")
-    HandleDelimiter("`n")
-    TypeTracked("select")
-    HandleDelimiter(" ")
-
-    GuiControlGet, actual,, TestEdit
-    RecordResult("quoted text and resume after newline", actual, "'select' `nSELECT ")
+    RecordResult("backspace correction", runtimeTestBuffer, "SELECT ")
 }
 
-RunLineCommentCase()
+RunControlBackspaceCase()
 {
+    global runtimeTestBuffer
     ResetTestState()
-    ClearEdit()
-    HandleCommentCharacter("-")
-    HandleCommentCharacter("-")
+    runtimeTestBuffer := "oldword"
+    ResetWord()
+    HandleBackspace(true)
+    runtimeTestBuffer := ""
     TypeTracked("select")
     HandleDelimiter(" ")
-    HandleDelimiter("`n")
-    TypeTracked("select")
-    HandleDelimiter(" ")
-
-    GuiControlGet, actual,, TestEdit
-    RecordResult("line comment and resume after newline", actual, "--select `nSELECT ")
+    RecordResult("Ctrl+Backspace then new keyword", runtimeTestBuffer, "SELECT ")
 }
 
-RunBlockCommentCase()
+RunSqlCase(name, input, expected)
 {
+    global runtimeTestBuffer
     ResetTestState()
-    ClearEdit()
-    HandleCommentCharacter("/")
-    HandleCommentCharacter("*")
-    TypeTracked("select")
-    HandleDelimiter(" ")
-    HandleCommentCharacter("*")
-    HandleCommentCharacter("/")
-    TypeTracked("select")
-    HandleDelimiter(" ")
+    runtimeTestBuffer := ""
+    TypeSql(input)
+    RecordResult(name, runtimeTestBuffer, expected)
+}
 
-    GuiControlGet, actual,, TestEdit
-    RecordResult("block comment and resume after closing", actual, "/*select */SELECT ")
+RunKeywordDictionaryCase()
+{
+    global keywords, failures, resultsFile, runtimeTestBuffer
+    checked := 0
+    failedWords := ""
+
+    for keyword, value in keywords {
+        ResetTestState()
+        runtimeTestBuffer := ""
+        TypeTracked(keyword)
+        HandleDelimiter(" ")
+        StringUpper, expected, keyword
+
+        if (runtimeTestBuffer != expected . " ") {
+            failures += 1
+            if (failedWords = "")
+                failedWords := keyword . " (got [" . runtimeTestBuffer . "])"
+            else
+                failedWords .= ", " . keyword . " (got [" . runtimeTestBuffer . "])"
+        }
+
+        checked += 1
+    }
+
+    if (failedWords = "")
+        FileAppend, % "PASS all " . checked . " dictionary entries`n", %resultsFile%
+    else
+        FileAppend, % "FAIL dictionary entries: " . failedWords . "`n", %resultsFile%
+}
+
+TypeSql(text)
+{
+    Loop, Parse, text
+    {
+        character := A_LoopField
+        if (RegExMatch(character, "^[a-zA-Z0-9_]$")) {
+            EmitText(character)
+            AppendKey(character)
+        } else if (character = "'" || character = Chr(34) || character = "``") {
+            HandleQuotedDelimiter(character)
+        } else if (character = "@" || character = "$") {
+            HandleVariablePrefix(character)
+        } else if (character = "-" || character = "/" || character = "*" || character = "#") {
+            HandleCommentCharacter(character)
+        } else {
+            HandleDelimiter(character)
+        }
+    }
 }
 
 TypeTracked(text)
@@ -111,29 +148,20 @@ TypeTracked(text)
     Loop, Parse, text
     {
         character := A_LoopField
-        SendInput, {Text}%character%
+        EmitText(character)
         AppendKey(character)
     }
 }
 
-ClearEdit()
-{
-    global testWindow
-    WinActivate, ahk_id %testWindow%
-    WinWaitActive, ahk_id %testWindow%,, 1
-    GuiControl,, TestEdit
-    GuiControl, Focus, TestEdit
-    Sleep, 30
-}
-
 ResetTestState()
 {
-    global unsafeUntilNewline, inBlockComment, quoteDelimiter, quoteBackslashCount, beautifierEnabled
+    global unsafeUntilNewline, inBlockComment, quoteDelimiter, quoteBackslashCount, variableName, beautifierEnabled
     ResetWord()
     unsafeUntilNewline := false
     inBlockComment := false
     quoteDelimiter := ""
     quoteBackslashCount := 0
+    variableName := false
     beautifierEnabled := true
 }
 
